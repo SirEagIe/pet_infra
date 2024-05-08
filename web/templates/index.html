@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Tempus</title>
+	<script type="text/javascript" src="static/js/masonry.min.js"></script>
+	<script type="text/javascript" src="static/js/jquery.min.js"></script>
+	<script type="text/javascript" src="static/js/jquery.lazyload.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/3.2.0/imagesloaded.pkgd.min.js"></script>
+	<link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+	<div class="button"><span>Источники</span></div>
+	<div class="filter">
+		<form class="form" action="" method="POST">
+			<div class="checkbox-box-box">
+				test
+			</div>
+			<input class="submit" type="submit" name="submit" value="Применить">
+		</form>
+	</div>
+
+	<script type="text/javascript">
+		let button = document.querySelector('.button');
+		let filter = document.querySelector('.filter');
+		button.addEventListener('click', function () {
+			filter.style.display = "block";
+		});
+	</script>
+
+	<header class="header">
+		<div class="uzor-near uzor-left"><span>Агрегатор новостей</span></div>
+		<div class="uzor"><img class="uzor-img" src="static/header.png" alt=""></div>
+		<div class="uzor-near uzor-right"><span>{{ request.headers['Host'] }}</span></div>
+		<hr class="hr-4" size="4">
+		<h1 class="main-title">Tempus</h1>
+		<hr class="hr-8" size="8">
+		<hr class="hr-4" size="4">
+		<div class="description-title"><span class="description-title-top">Самые свежие новости</span><br><span class="description-title-bottom">за последнее время</span></div>
+		<hr class="hr-4" size="4">
+		<hr class="hr-8" size="8">
+		<div class="date">
+			<script type="text/javascript" src="static/js/printDate.js"></script>
+		</div>
+		<div class="fraza">
+			<script type="text/javascript" src="static/js/holidays.js"></script>
+		</div>
+		<hr class="hr-4" size="4">
+	</header>
+
+	<section class="section">
+		<div class="container">
+		    <div class="gutter-sizer"></div>
+			{% for article in articles %}
+				<div class="article">
+					<img class="article-img" src="{{ article[5] }}"><br>
+					<div class="article-content">
+						<a class="article-href" target="_blank" href="{{ article[3] }}">
+							<h2 class="article-title">
+								{{ article[1] }}
+							</h2>
+						</a>
+						<br>
+						<div class="article-text">
+							{{ article[2] }}
+						</div>
+						<br>
+						<div class="article-date">
+							{{ article[4] }}
+						</div>
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+		<a href="/?page={{ page + 1 }}"><button class="more">Показать больше</button></a>
+	</section>
+	
+	<script type="text/javascript">
+		var container = document.querySelector('.container');
+		var more = document.querySelector('.more');
+		container.style.display = "none";
+		//more.style.display = "none";
+		$('.container').imagesLoaded(function() {
+		//$('document').ready(function() {
+			container.style.display = "block";
+			//more.style.display = "block";
+			var msnry = new Masonry(container, {
+			  itemSelector: '.article',
+			  gutter: '.gutter-sizer',
+			});
+		});
+	</script>
+	<script type="text/javascript">
+	$(document).ready(function(){
+		var d = new Date();
+		var n = d.getDay();
+		if (n == 6) {
+			$(".uzor-img").attr('src', 'static/shabbat.png');
+			$(".uzor-img").attr('style', 'width:30%');
+			$(".fraza").text($(".fraza").text() + ' (Шаббат Шалом!!!)');
+		}
+	});
+</script>
+</body>
+</html>

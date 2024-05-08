@@ -1,0 +1,143 @@
+version: "3.9"
+services:
+    pg_db:
+        image: postgres:15
+        container_name: pg_db
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_HOST_AUTH_METHOD: ${POSTGRES_HOST_AUTH_METHOD}
+        expose:
+            - ${POSTGRES_PORT}
+        volumes:
+            - ./pg_data:/var/lib/postgresql/data/
+        restart: always
+    # pgadmin:
+    #     image: dpage/pgadmin4
+    #     container_name: pgadmin
+    #     expose:
+    #         - 5050
+    #     restart: always
+    web:
+        build:
+            context: ./web
+            dockerfile: Dockerfile
+        container_name: web
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_PORT: ${POSTGRES_PORT}
+        expose:
+            - 5000
+        depends_on:
+            - pg_db
+        restart: always
+    nginx:
+        build:
+            context: ./nginx
+            dockerfile: Dockerfile
+            args:
+                - CONF_FILE=${CONF_FILE}
+                - DOMAIN=${DOMAIN}
+                - NEWS_SUBDOMAIN=${NEWS_SUBDOMAIN}
+        container_name: nginx
+        environment:
+            - DOMAIN=${DOMAIN}
+            - WG_WEB_SUBDOMAIN=${WG_WEB_SUBDOMAIN}
+            - NEWS_SUBDOMAIN=${NEWS_SUBDOMAIN}
+            - TERMINAL_VNC_SUBDOMAIN=${TERMINAL_VNC_SUBDOMAIN}
+            - WG_WEB_PORT=${WG_WEB_PORT}
+            - TERMINAL_PORT=${TERMINAL_PORT}
+            - TG_MONITORING_CHAT_ID=${TG_MONITORING_CHAT_ID}
+            - TG_MONITORING_BOT_TOKEN=${TG_MONITORING_BOT_TOKEN}
+        ports:
+            - 443:443
+            - 80:80
+        depends_on:
+            - web
+            - wg_vpn
+            # - bwapp
+            # - pgadmin
+        restart: always
+    # kb:
+    #     image: ghcr.io/sytone/obsidian-remote:latest
+    #     container_name: kb
+    #     expose:
+    #         - 8080
+    #     volumes:
+    #         - ./obsidian/vaults:/vaults
+    #         - ./obsidian/config:/config
+    #     restart: always
+    # bwapp:
+    #     image: raesene/bwapp
+    #     container_name: bwapp
+    #     expose:
+    #         - 80
+    #     restart: always
+    rss_parser:
+        build:
+            context: ./rss_parser
+            dockerfile: Dockerfile
+        container_name: rss_parser
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_PORT: ${POSTGRES_PORT}
+        depends_on:
+            - pg_db
+        restart: always
+    wg_vpn:
+        image: weejewel/wg-easy
+        container_name: wg_vpn
+        environment:
+            - WG_HOST=${WG_HOST}
+            - PASSWORD=${PASSWORD}
+            - WG_PORT=${WG_PORT}
+            - WG_DEFAULT_DNS=${WG_DEFAULT_DNS}
+            - WG_MTU=${WG_MTU}
+        ports:
+            - "${WG_PORT}:${WG_PORT}/udp"
+        expose:
+            - "${WG_WEB_PORT}/tcp"
+        restart: unless-stopped
+        volumes:
+            - ./wg_vpn:/etc/wireguard
+        cap_add:
+            - NET_ADMIN
+            - SYS_MODULE
+        sysctls:
+            - net.ipv4.ip_forward=1
+            - net.ipv4.conf.all.src_valid_mark=1
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.wg-easy.rule=Host(`${WG_DOMAIN}`)"
+            - "traefik.http.routers.wg-easy.entrypoints=websecure"
+            - "traefik.http.routers.wg-easy.tls.certresolver=myresolver"
+            - "traefik.http.services.wg-easy.loadbalancer.server.port=${WG_WEB_PORT}"
+    chatgpt-telegram-bot:
+        build:
+            context: ./chatgpt-telegram-bot
+            dockerfile: Dockerfile
+        environment:
+            - OPENAI_API_KEY=${OPENAI_API_KEY}
+            - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+            - ADMIN_USER_IDS=${ADMIN_USER_IDS}
+            - ALLOWED_TELEGRAM_USER_IDS=${ALLOWED_TELEGRAM_USER_IDS}
+        volumes:
+            - ./chatgpt-telegram-bot:/app
+        restart: unless-stopped
+    terminal:
+        build:
+            context: ./terminal
+            dockerfile: Dockerfile
+            args:
+                - TERMINAL_USER=${TERMINAL_USER}
+                - TERMINAL_USER_PASS=${TERMINAL_USER_PASS}
+                - TERMINAL_VNC_PASS=${TERMINAL_VNC_PASS}
+        container_name: terminal
+        expose:
+            - ${TERMINAL_PORT}
+        restart: always

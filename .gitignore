@@ -1,0 +1,8 @@
+.env
+nginx/cert/*.cer
+nginx/cert/*.crt
+nginx/cert/*.pem
+nginx/cert/*.key
+pg_data/*
+wg_vpn/*
+chatgpt-telegram-bot/usage_logs/*
