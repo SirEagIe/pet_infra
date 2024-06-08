@@ -6,3 +6,7 @@ nginx/cert/*.key
 pg_data/*
 wg_vpn/*
 chatgpt-telegram-bot/usage_logs/*
+squid/squid.csr
+squid/squid.der
+squid/squid.key
+squid/squid.pem

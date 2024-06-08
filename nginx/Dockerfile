@@ -1,7 +1,7 @@
 FROM nginx
 
 RUN apt update
-RUN apt install -y cron
+RUN apt install -y cron vim
 
 RUN rm /etc/nginx/conf.d/default.conf
 COPY ./cert/fullchain.cer /etc/ssl/
@@ -18,7 +18,14 @@ ARG DOMAIN
 ARG NEWS_SUBDOMAIN
 RUN sed -i 's/NEWS_SUBDOMAIN.DOMAIN/'$NEWS_SUBDOMAIN'.'$DOMAIN'/g' /usr/share/nginx/html/index.html
 
+ARG TG_MONITORING_BOT_TOKEN
+ARG TG_MONITORING_CHAT_ID
 RUN mkdir /etc/scripts
 COPY check_ssl.sh /etc/scripts
 RUN chmod +x /etc/scripts/check_ssl.sh
-RUN echo "0 10 * * * root /etc/scripts/check_ssl.sh" >> /etc/crontab
+RUN echo '0 3 * * * /etc/scripts/check_ssl.sh '$TG_MONITORING_BOT_TOKEN' '$TG_MONITORING_CHAT_ID' '$DOMAIN'' >> /var/spool/cron/crontabs/root
+
+RUN echo '#!/bin/bash\n\ncron && crontab /var/spool/cron/crontabs/root && /docker-entrypoint.sh "$@"' >> /entrypoint-wrapper.sh
+RUN chmod +x /entrypoint-wrapper.sh
+ENTRYPOINT ["/entrypoint-wrapper.sh"]
+CMD ["nginx", "-g", "daemon off;"]

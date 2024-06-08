@@ -42,6 +42,8 @@ services:
                 - CONF_FILE=${CONF_FILE}
                 - DOMAIN=${DOMAIN}
                 - NEWS_SUBDOMAIN=${NEWS_SUBDOMAIN}
+                - TG_MONITORING_BOT_TOKEN=${TG_MONITORING_BOT_TOKEN}
+                - TG_MONITORING_CHAT_ID=${TG_MONITORING_CHAT_ID}
         container_name: nginx
         environment:
             - DOMAIN=${DOMAIN}
@@ -50,8 +52,8 @@ services:
             - TERMINAL_VNC_SUBDOMAIN=${TERMINAL_VNC_SUBDOMAIN}
             - WG_WEB_PORT=${WG_WEB_PORT}
             - TERMINAL_PORT=${TERMINAL_PORT}
-            - TG_MONITORING_CHAT_ID=${TG_MONITORING_CHAT_ID}
             - TG_MONITORING_BOT_TOKEN=${TG_MONITORING_BOT_TOKEN}
+            - TG_MONITORING_CHAT_ID=${TG_MONITORING_CHAT_ID}
         ports:
             - 443:443
             - 80:80
@@ -121,6 +123,7 @@ services:
         build:
             context: ./chatgpt-telegram-bot
             dockerfile: Dockerfile
+        container_name: chatgpt-telegram-bot
         environment:
             - OPENAI_API_KEY=${OPENAI_API_KEY}
             - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
@@ -140,4 +143,16 @@ services:
         container_name: terminal
         expose:
             - ${TERMINAL_PORT}
+        restart: always
+    squid_proxy:
+        image: ubuntu/squid
+        container_name: squid_proxy
+        volumes:
+            - ./squid/squid.conf:/etc/squid/squid.conf
+            # - ./squid/squid.pem:/etc/squid/ssl/squid.pem
+            # - ./squid/squid.key:/etc/squid/ssl/squid.key
+        ports:
+            - 3128:3128
+            - 3129:3129
+            - 3130:3130
         restart: always
