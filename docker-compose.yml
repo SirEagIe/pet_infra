@@ -50,8 +50,10 @@ services:
             - WG_WEB_SUBDOMAIN=${WG_WEB_SUBDOMAIN}
             - NEWS_SUBDOMAIN=${NEWS_SUBDOMAIN}
             - TERMINAL_VNC_SUBDOMAIN=${TERMINAL_VNC_SUBDOMAIN}
+            - JUPYTER_SUBDOMAIN=${JUPYTER_SUBDOMAIN}
             - WG_WEB_PORT=${WG_WEB_PORT}
             - TERMINAL_PORT=${TERMINAL_PORT}
+            - JUPYTER_PORT=${JUPYTER_PORT}
             - TG_MONITORING_BOT_TOKEN=${TG_MONITORING_BOT_TOKEN}
             - TG_MONITORING_CHAT_ID=${TG_MONITORING_CHAT_ID}
         ports:
@@ -144,15 +146,24 @@ services:
         expose:
             - ${TERMINAL_PORT}
         restart: always
-    squid_proxy:
-        image: ubuntu/squid
-        container_name: squid_proxy
+    jupyter:
+        image: jupyter/base-notebook
+        container_name: jupyter
+        expose:
+            - "${JUPYTER_PORT}"
         volumes:
-            - ./squid/squid.conf:/etc/squid/squid.conf
-            # - ./squid/squid.pem:/etc/squid/ssl/squid.pem
-            # - ./squid/squid.key:/etc/squid/ssl/squid.key
-        ports:
-            - 3128:3128
-            - 3129:3129
-            - 3130:3130
+            - ./jupyter/config.json:/home/jovyan/.jupyter/jupyter_server_config.json
         restart: always
+
+    # squid_proxy:
+    #     image: ubuntu/squid
+    #     container_name: squid_proxy
+    #     volumes:
+    #         - ./squid/squid.conf:/etc/squid/squid.conf
+    #         # - ./squid/squid.pem:/etc/squid/ssl/squid.pem
+    #         # - ./squid/squid.key:/etc/squid/ssl/squid.key
+    #     ports:
+    #         - 3128:3128
+    #         - 3129:3129
+    #         - 3130:3130
+    #     restart: always
