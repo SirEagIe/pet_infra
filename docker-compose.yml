@@ -156,12 +156,12 @@ services:
         restart: always
 
     # squid_proxy:
-    #     image: ubuntu/squid
+    #     image: sameersbn/squid
     #     container_name: squid_proxy
     #     volumes:
     #         - ./squid/squid.conf:/etc/squid/squid.conf
-    #         # - ./squid/squid.pem:/etc/squid/ssl/squid.pem
-    #         # - ./squid/squid.key:/etc/squid/ssl/squid.key
+    #         - ./squid/squid.pem:/etc/squid/ssl/squid.pem
+    #         - ./squid/squid.key:/etc/squid/ssl/squid.key
     #     ports:
     #         - 3128:3128
     #         - 3129:3129
