@@ -9,6 +9,11 @@ import os
 app = Flask(__name__)
 
 
+@app.route('/js')
+def js():
+    return render_template('js.html')
+
+
 @app.route('/kek')
 def hello_world():
     return '<h1>ZaLuPa KoNyA</h1><img src="https://cdn-st1.rtr-vesti.ru/vh/pictures/xw/217/453/4.jpg">'

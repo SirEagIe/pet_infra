@@ -10,3 +10,5 @@ squid/squid.csr
 squid/squid.der
 squid/squid.key
 squid/squid.pem
+jupyter/workdir/*
+trilium-data/*

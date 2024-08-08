@@ -50,6 +50,7 @@ services:
             - WG_WEB_SUBDOMAIN=${WG_WEB_SUBDOMAIN}
             - NEWS_SUBDOMAIN=${NEWS_SUBDOMAIN}
             - TERMINAL_VNC_SUBDOMAIN=${TERMINAL_VNC_SUBDOMAIN}
+            - TRILIUM_SUBDOMAIN=${TRILIUM_SUBDOMAIN}
             - JUPYTER_SUBDOMAIN=${JUPYTER_SUBDOMAIN}
             - WG_WEB_PORT=${WG_WEB_PORT}
             - TERMINAL_PORT=${TERMINAL_PORT}
@@ -59,27 +60,14 @@ services:
         ports:
             - 443:443
             - 80:80
+        expose:
+            - 8443
         depends_on:
             - web
             - wg_vpn
             # - bwapp
             # - pgadmin
         restart: always
-    # kb:
-    #     image: ghcr.io/sytone/obsidian-remote:latest
-    #     container_name: kb
-    #     expose:
-    #         - 8080
-    #     volumes:
-    #         - ./obsidian/vaults:/vaults
-    #         - ./obsidian/config:/config
-    #     restart: always
-    # bwapp:
-    #     image: raesene/bwapp
-    #     container_name: bwapp
-    #     expose:
-    #         - 80
-    #     restart: always
     rss_parser:
         build:
             context: ./rss_parser
@@ -121,6 +109,19 @@ services:
             - "traefik.http.routers.wg-easy.entrypoints=websecure"
             - "traefik.http.routers.wg-easy.tls.certresolver=myresolver"
             - "traefik.http.services.wg-easy.loadbalancer.server.port=${WG_WEB_PORT}"
+    vless_vpn:
+        build:
+            context: ./vless_vpn
+            dockerfile: Dockerfile
+        container_name: vless_vpn
+        expose:
+            - 7443
+        environment:
+            - FAKE_DOMAIN=${FAKE_DOMAIN}
+            - XRAY_UUID=${XRAY_UUID}
+            - XRAY_PRIVKEY=${XRAY_PRIVKEY}
+            - XRAY_PUBKEY=${XRAY_PUBKEY}
+        restart: always
     chatgpt-telegram-bot:
         build:
             context: ./chatgpt-telegram-bot
@@ -153,17 +154,14 @@ services:
             - "${JUPYTER_PORT}"
         volumes:
             - ./jupyter/config.json:/home/jovyan/.jupyter/jupyter_server_config.json
+            - ./jupyter/workdir:/home/jovyan/work 
         restart: always
-
     # squid_proxy:
     #     image: sameersbn/squid
     #     container_name: squid_proxy
     #     volumes:
     #         - ./squid/squid.conf:/etc/squid/squid.conf
-    #         - ./squid/squid.pem:/etc/squid/ssl/squid.pem
-    #         - ./squid/squid.key:/etc/squid/ssl/squid.key
     #     ports:
     #         - 3128:3128
-    #         - 3129:3129
-    #         - 3130:3130
     #     restart: always
+

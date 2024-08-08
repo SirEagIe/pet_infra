@@ -1,14 +1,15 @@
-FROM nginx
-
-RUN apt update
-RUN apt install -y cron vim
+FROM nginx:alpine
 
 RUN rm /etc/nginx/conf.d/default.conf
 COPY ./cert/fullchain.cer /etc/ssl/
 COPY ./cert/privkey.key /etc/ssl/
 
+COPY nginx.conf /etc/nginx/nginx.conf
+#RUN sed -i 's/example.com/'$DOMAIN'/g' /etc/nginx/nginx.conf
+
 ARG CONF_FILE
 COPY $CONF_FILE /etc/nginx/templates/
+COPY nginx_stream.conf.template /etc/nginx/templates/
 
 RUN rm /usr/share/nginx/html/index.html
 COPY ./welcome_page/index.html /usr/share/nginx/html
@@ -18,14 +19,3 @@ ARG DOMAIN
 ARG NEWS_SUBDOMAIN
 RUN sed -i 's/NEWS_SUBDOMAIN.DOMAIN/'$NEWS_SUBDOMAIN'.'$DOMAIN'/g' /usr/share/nginx/html/index.html
 
-ARG TG_MONITORING_BOT_TOKEN
-ARG TG_MONITORING_CHAT_ID
-RUN mkdir /etc/scripts
-COPY check_ssl.sh /etc/scripts
-RUN chmod +x /etc/scripts/check_ssl.sh
-RUN echo '0 3 * * * /etc/scripts/check_ssl.sh '$TG_MONITORING_BOT_TOKEN' '$TG_MONITORING_CHAT_ID' '$DOMAIN'' >> /var/spool/cron/crontabs/root
-
-RUN echo '#!/bin/bash\n\ncron && crontab /var/spool/cron/crontabs/root && /docker-entrypoint.sh "$@"' >> /entrypoint-wrapper.sh
-RUN chmod +x /entrypoint-wrapper.sh
-ENTRYPOINT ["/entrypoint-wrapper.sh"]
-CMD ["nginx", "-g", "daemon off;"]

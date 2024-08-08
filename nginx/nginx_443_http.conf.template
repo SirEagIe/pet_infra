@@ -1,6 +1,13 @@
 server {
     listen 80;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 8443 ssl;
     server_name ${DOMAIN} www.${DOMAIN};
+    ssl_certificate /etc/ssl/fullchain.cer;
+    ssl_certificate_key /etc/ssl/privkey.key;
     client_max_body_size 50M;
 
     location / {
@@ -15,11 +22,20 @@ server {
         proxy_set_header Host $host;
         proxy_redirect off;
     }
+
+    location /js {
+        proxy_pass http://web:5000/js;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $host;
+        proxy_redirect off;
+    }
 }
 
 server {
-    listen 80;
+    listen 8443 ssl;
     server_name ${TERMINAL_VNC_SUBDOMAIN}.${DOMAIN};
+    ssl_certificate /etc/ssl/fullchain.cer;
+    ssl_certificate_key /etc/ssl/privkey.key;
 
     location / {
         proxy_pass http://terminal:${TERMINAL_PORT}/;     
@@ -35,8 +51,10 @@ server {
 }
 
 server {
-    listen 80;
+    listen 8443 ssl;
     server_name ${WG_WEB_SUBDOMAIN}.${DOMAIN};
+    ssl_certificate /etc/ssl/fullchain.cer;
+    ssl_certificate_key /etc/ssl/privkey.key;
     location / {
         proxy_pass http://wg_vpn:${WG_WEB_PORT};
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -46,8 +64,10 @@ server {
 }
 
 server {
-    listen 80;
+    listen 8443 ssl;
     server_name ${NEWS_SUBDOMAIN}.${DOMAIN};
+    ssl_certificate /etc/ssl/fullchain.cer;
+    ssl_certificate_key /etc/ssl/privkey.key;
     location / {
         proxy_pass http://web:5000;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -56,9 +76,12 @@ server {
     }
 }
 
+
 server {
-    listen 80;
+    listen 8443 ssl;
     server_name ${JUPYTER_SUBDOMAIN}.${DOMAIN};
+    ssl_certificate /etc/ssl/fullchain.cer;
+    ssl_certificate_key /etc/ssl/privkey.key;
 
     location / {
         proxy_pass http://jupyter:${JUPYTER_PORT};
@@ -77,7 +100,7 @@ server {
 }
 
 # server {
-#     listen 443 ssl;
+#     listen 8443 ssl;
 #     server_name bwapp.${DOMAIN};
 #     ssl_certificate /etc/ssl/fullchain.cer;
 #     ssl_certificate_key /etc/ssl/privkey.key;
@@ -89,18 +112,3 @@ server {
 #     }
 # }
 
-# server {
-#     listen 443 ssl;
-#     server_name kb.${DOMAIN};
-#     ssl_certificate /etc/ssl/fullchain.cer;
-#     ssl_certificate_key /etc/ssl/privkey.key;
-#     location / {
-#         proxy_pass http://kb:8080;
-#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-#         proxy_set_header Host $host;
-#         proxy_redirect off;
-# 	proxy_http_version 1.1;
-# 	proxy_set_header Upgrade $http_upgrade;
-# 	proxy_set_header Connection "upgrade";
-#     }
-# }
