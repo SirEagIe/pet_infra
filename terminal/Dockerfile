@@ -36,6 +36,7 @@ COPY entrypoint.sh .
 RUN sudo chown $TERMINAL_USER:$TERMINAL_USER entrypoint.sh
 RUN chmod u+x entrypoint.sh
 
+RUN mkdir ~/.vnc
 RUN echo 'geometry=1280x720' > ~/.vnc/config
 RUN echo 'localhost' >> ~/.vnc/config
 RUN echo 'alwaysshared' >> ~/.vnc/config
