@@ -12,3 +12,4 @@ squid/squid.key
 squid/squid.pem
 jupyter/workdir/*
 trilium-data/*
+terminal/volume

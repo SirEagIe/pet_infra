@@ -50,8 +50,8 @@ services:
             - WG_WEB_SUBDOMAIN=${WG_WEB_SUBDOMAIN}
             - NEWS_SUBDOMAIN=${NEWS_SUBDOMAIN}
             - TERMINAL_VNC_SUBDOMAIN=${TERMINAL_VNC_SUBDOMAIN}
-            - TRILIUM_SUBDOMAIN=${TRILIUM_SUBDOMAIN}
             - JUPYTER_SUBDOMAIN=${JUPYTER_SUBDOMAIN}
+            - VIKUNJA_SUBDOMAIN=${VIKUNJA_SUBDOMAIN}
             - WG_WEB_PORT=${WG_WEB_PORT}
             - TERMINAL_PORT=${TERMINAL_PORT}
             - JUPYTER_PORT=${JUPYTER_PORT}
@@ -122,19 +122,6 @@ services:
             - XRAY_PRIVKEY=${XRAY_PRIVKEY}
             - XRAY_PUBKEY=${XRAY_PUBKEY}
         restart: always
-    chatgpt-telegram-bot:
-        build:
-            context: ./chatgpt-telegram-bot
-            dockerfile: Dockerfile
-        container_name: chatgpt-telegram-bot
-        environment:
-            - OPENAI_API_KEY=${OPENAI_API_KEY}
-            - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-            - ADMIN_USER_IDS=${ADMIN_USER_IDS}
-            - ALLOWED_TELEGRAM_USER_IDS=${ALLOWED_TELEGRAM_USER_IDS}
-        volumes:
-            - ./chatgpt-telegram-bot:/app
-        restart: unless-stopped
     terminal:
         build:
             context: ./terminal
@@ -146,16 +133,27 @@ services:
         container_name: terminal
         expose:
             - ${TERMINAL_PORT}
+        volumes:
+            - ./terminal/volume:/home/${TERMINAL_USER}/volume
         restart: always
-    # jupyter:
-    #     image: jupyter/base-notebook
-    #     container_name: jupyter
-    #     expose:
-    #         - "${JUPYTER_PORT}"
-    #     volumes:
-    #         - ./jupyter/config.json:/home/jovyan/.jupyter/jupyter_server_config.json
-    #         - ./jupyter/workdir:/home/jovyan/work 
-    #     restart: always
+    vikunja:
+        image: vikunja/vikunja
+        container_name: vikunja
+        expose:
+            - 3456
+        volumes:
+            - ./vikunja/files:/app/vikunja/files
+            - ./vikunja/db:/db
+        restart: always
+    jupyter:
+        image: jupyter/base-notebook
+        container_name: jupyter
+        expose:
+            - "${JUPYTER_PORT}"
+        volumes:
+            - ./jupyter/config.json:/home/jovyan/.jupyter/jupyter_server_config.json
+            - ./jupyter/workdir:/home/jovyan/work 
+        restart: always
     # squid_proxy:
     #     image: sameersbn/squid
     #     container_name: squid_proxy
