@@ -1,4 +1,3 @@
-version: "3.9"
 services:
     pg_db:
         image: postgres:15
@@ -153,6 +152,15 @@ services:
         volumes:
             - ./jupyter/config.json:/home/jovyan/.jupyter/jupyter_server_config.json
             - ./jupyter/workdir:/home/jovyan/work 
+        restart: always
+    kb:
+        image: ghcr.io/sytone/obsidian-remote:latest
+        container_name: kb
+        expose:
+            - 8080
+        volumes:
+            - ./obsidian/vaults:/vaults
+            - ./obsidian/config:/config
         restart: always
     # squid_proxy:
     #     image: sameersbn/squid

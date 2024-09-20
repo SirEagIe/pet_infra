@@ -14,6 +14,7 @@ COPY nginx_stream.conf.template /etc/nginx/templates/
 RUN rm /usr/share/nginx/html/index.html
 COPY ./welcome_page/index.html /usr/share/nginx/html
 COPY ./welcome_page/music.mp3 /usr/share/nginx/html
+COPY htpasswd /etc/nginx/.htpasswd
 
 ARG DOMAIN
 ARG NEWS_SUBDOMAIN

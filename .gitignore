@@ -13,3 +13,5 @@ squid/squid.pem
 jupyter/workdir/*
 trilium-data/*
 terminal/volume
+obsidian
+nginx/htpasswd
